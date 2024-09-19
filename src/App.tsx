@@ -1,35 +1,52 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from "react";
+// import "./App.css";
+import { createConnection } from "./chat.ts";
 
-function App() {
-  const [count, setCount] = useState(0)
+function ChatRoom({ roomId }: { roomId: string }) {
+  const [serverUrl, setServerUrl] = useState("https://localhost:1234");
+
+  useEffect(() => {
+    const connection = createConnection(serverUrl, roomId);
+    connection.connect();
+    return () => {
+      connection.disconnect();
+    };
+  }, [roomId, serverUrl]);
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <label>
+        Server URL:{" "}
+        <input
+          value={serverUrl}
+          onChange={(e) => setServerUrl(e.target.value)}
+        />
+      </label>
+      <h1>Welcome to the {roomId} room!</h1>
     </>
-  )
+  );
 }
 
-export default App
+function App() {
+  const [roomId, setRoomId] = useState("general");
+  const [show, setShow] = useState(false);
+  return (
+    <>
+      <label>
+        Choose the chat room:{" "}
+        <select value={roomId} onChange={(e) => setRoomId(e.target.value)}>
+          <option value="general">general</option>
+          <option value="travel">travel</option>
+          <option value="music">music</option>
+        </select>
+      </label>
+      <button onClick={() => setShow(!show)}>
+        {show ? "Close chat" : "Open chat"}
+      </button>
+      {show && <hr />}
+      {show && <ChatRoom roomId={roomId} />}
+    </>
+  );
+}
+
+export default App;
